@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import { TextField, Button, Box, Typography } from '@mui/material'
+import { TextField, Button, Box, Typography, Link } from '@mui/material'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
@@ -10,7 +10,7 @@ export default function LoginPage(){
 
   const doLogin = async () => {
     try{
-      const r = await axios.post('http://127.0.0.1:5000/api/login', { username, password })
+      const r = await axios.post('/api/login', { username, password })
       const token = r.data.access_token
       localStorage.setItem('token', token)
       navigate('/dashboard')
@@ -25,6 +25,9 @@ export default function LoginPage(){
       <TextField fullWidth label="Username" margin="normal" value={username} onChange={e=>setUsername(e.target.value)} />
       <TextField fullWidth label="Password" type="password" margin="normal" value={password} onChange={e=>setPassword(e.target.value)} />
       <Button variant="contained" onClick={doLogin} sx={{mt:2}}>Login</Button>
+      <Box sx={{mt:2}}>
+        <Link href="/register">Don't have an account? Register</Link>
+      </Box>
     </Box>
   )
 }

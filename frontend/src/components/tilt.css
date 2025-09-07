@@ -1,0 +1,3 @@
+.tilt-root{perspective:1000px}
+.tilt-card{transition: transform 0.25s ease, box-shadow 0.25s ease; transform-style: preserve-3d}
+.tilt-card:hover{transform: rotateX(6deg) rotateY(-6deg) translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.12)}

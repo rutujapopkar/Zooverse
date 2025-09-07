@@ -223,13 +223,58 @@ def create_app():
 
     # Booking endpoints (customers create, admin can view/manage)
     from .models import Booking
+    from .models import PricingRule
 
     def generate_qr_base64(text: str) -> str:
         img = qrcode.make(text)
         buf = io.BytesIO()
-        img.save(buf, format='PNG')
+        # PIL accepts a positional format argument; use positional to avoid static analyzer issues
+        img.save(buf, 'PNG')
         b = buf.getvalue()
         return base64.b64encode(b).decode('ascii')
+
+    def compute_price_for(date_obj, time_slot, num_adults, num_children):
+        # find applicable pricing rule by priority
+        rules = PricingRule.query.order_by(PricingRule.priority.desc()).all()
+        from datetime import datetime, time as dt_time
+        applicable = None
+        for r in rules:
+            ok = True
+            if r.start_date and date_obj < r.start_date:
+                ok = False
+            if r.end_date and date_obj > r.end_date:
+                ok = False
+            # days: CSV of 0-6 where Monday=0
+            if r.days:
+                days = [int(x) for x in r.days.split(',') if x.strip().isdigit()]
+                if date_obj.weekday() not in days:
+                    ok = False
+            # time window check
+            if r.start_time or r.end_time:
+                try:
+                    ts_parts = time_slot.split('-')
+                    start_ts = datetime.strptime(ts_parts[0].strip(), '%H:%M').time()
+                    # check overlap with rule window
+                    if r.start_time:
+                        rule_start = datetime.strptime(r.start_time, '%H:%M').time()
+                        if start_ts < rule_start:
+                            ok = False
+                    if r.end_time:
+                        rule_end = datetime.strptime(r.end_time, '%H:%M').time()
+                        if start_ts > rule_end:
+                            ok = False
+                except Exception:
+                    pass
+            if ok:
+                applicable = r
+                break
+        if applicable:
+            total = num_adults * applicable.adult_cents + num_children * applicable.child_cents
+            return total, applicable.currency
+        # fallback default pricing
+        default_adult = 20000  # INR paise (200.00 INR)
+        default_child = 10000  # 100.00 INR
+        return num_adults * default_adult + num_children * default_child, 'INR'
 
     @app.route('/api/bookings', methods=['POST'])
     @jwt_required()
@@ -238,15 +283,21 @@ def create_app():
         claims = get_jwt()
         data = request.get_json() or {}
         # allowed: any authenticated user (customer, admin)
+        date_str = data.get('date')
+        if not date_str:
+            return jsonify({'msg': 'date required'}), 400
         try:
-            bdate = datetime.fromisoformat(data.get('date')).date()
+            bdate = datetime.fromisoformat(date_str).date()
         except Exception:
             return jsonify({'msg': 'invalid date format'}), 400
         time_slot = data.get('time_slot') or '09:00-11:00'
         num_adults = int(data.get('num_adults', 1))
         num_children = int(data.get('num_children', 0))
-        # price calc stub: 1000 cents per adult, 500 per child
-        price_cents = num_adults * 1000 + num_children * 500
+        # allow client to pass price_cents/currency, else compute using pricing rules
+        price_cents = data.get('price_cents')
+        currency = data.get('currency', 'INR')
+        if price_cents is None:
+            price_cents, currency = compute_price_for(bdate, time_slot, num_adults, num_children)
         paid = data.get('paid', False)
 
         booking = Booking(
@@ -256,6 +307,7 @@ def create_app():
             num_adults=num_adults,
             num_children=num_children,
             price_cents=price_cents,
+            currency=currency,
             paid=bool(paid)
         )
         db.session.add(booking)
@@ -278,6 +330,93 @@ def create_app():
             bs = Booking.query.filter_by(user_id=int(uid)).all()
         return jsonify([b.to_dict() for b in bs])
 
+    # Pricing rule CRUD (admin only)
+    @app.route('/api/pricing', methods=['POST'])
+    @jwt_required()
+    def create_pricing():
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'msg': 'forbidden'}), 403
+        data = request.get_json() or {}
+        def parse_date(s):
+            try:
+                return datetime.fromisoformat(s).date() if s else None
+            except Exception:
+                return None
+        r = PricingRule(
+            name=data.get('name'),
+            start_date=parse_date(data.get('start_date')),
+            end_date=parse_date(data.get('end_date')),
+            days=data.get('days'),
+            start_time=data.get('start_time'),
+            end_time=data.get('end_time'),
+            adult_cents=int(data.get('adult_cents', 0)),
+            child_cents=int(data.get('child_cents', 0)),
+            currency=data.get('currency', 'INR'),
+            priority=int(data.get('priority', 0))
+        )
+        db.session.add(r)
+        db.session.commit()
+        return jsonify(r.to_dict()), 201
+
+    @app.route('/api/pricing', methods=['GET'])
+    @jwt_required()
+    def list_pricing():
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'msg': 'forbidden'}), 403
+        rules = PricingRule.query.order_by(PricingRule.priority.desc()).all()
+        return jsonify([r.to_dict() for r in rules])
+
+    @app.route('/api/pricing/<int:rule_id>', methods=['PUT'])
+    @jwt_required()
+    def update_pricing(rule_id):
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'msg': 'forbidden'}), 403
+        r = PricingRule.query.get_or_404(rule_id)
+        data = request.get_json() or {}
+        for f in ('name','days','start_time','end_time','currency'):
+            if f in data:
+                setattr(r, f, data[f])
+        if 'start_date' in data:
+            sd = data.get('start_date')
+            if sd:
+                try:
+                    r.start_date = datetime.fromisoformat(sd).date()
+                except Exception:
+                    return jsonify({'msg':'invalid date'}), 400
+            else:
+                r.start_date = None
+        if 'end_date' in data:
+            ed = data.get('end_date')
+            if ed:
+                try:
+                    r.end_date = datetime.fromisoformat(ed).date()
+                except Exception:
+                    return jsonify({'msg':'invalid date'}), 400
+            else:
+                r.end_date = None
+        if 'adult_cents' in data:
+            r.adult_cents = int(data.get('adult_cents', 0))
+        if 'child_cents' in data:
+            r.child_cents = int(data.get('child_cents', 0))
+        if 'priority' in data:
+            r.priority = int(data.get('priority', 0))
+        db.session.commit()
+        return jsonify(r.to_dict())
+
+    @app.route('/api/pricing/<int:rule_id>', methods=['DELETE'])
+    @jwt_required()
+    def delete_pricing(rule_id):
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'msg': 'forbidden'}), 403
+        r = PricingRule.query.get_or_404(rule_id)
+        db.session.delete(r)
+        db.session.commit()
+        return jsonify({'msg':'deleted'})
+
     @app.route('/api/bookings/<int:booking_id>/pay', methods=['POST'])
     @jwt_required()
     def pay_booking(booking_id):
@@ -286,6 +425,18 @@ def create_app():
         b.paid = True
         db.session.commit()
         return jsonify({'msg': 'payment recorded', 'booking': b.to_dict()})
+
+    # Simple root index for quick checks
+    @app.route('/', methods=['GET'])
+    def index():
+        return jsonify({
+            'service': 'Smart Zoo API',
+            'version': 'prototype',
+            'endpoints': [
+                '/api/register', '/api/login', '/api/animals', '/api/bookings', '/api/staff'
+            ],
+            'note': 'This is an API server; use /api/* endpoints or run the frontend.'
+        })
 
     return app
 
