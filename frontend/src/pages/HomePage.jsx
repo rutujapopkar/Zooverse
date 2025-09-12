@@ -1,13 +1,13 @@
 import React from 'react'
 import { Box, Typography, Button, Grid, Card, CardContent, CardMedia } from '@mui/material'
 import ImageWithFallback from '../components/ImageWithFallback'
-import { sanitizeName } from '../utils/sanitizeName'
+import { imageCandidatesForAnimal } from '../utils/imageCandidates'
 import { useNavigate } from 'react-router-dom'
 
 const demoAnimals = [
-  { id: 1, name: 'Giraffe', local: '/images/animals/giraffe.jpg', fallback: 'https://source.unsplash.com/featured/?giraffe' },
-  { id: 2, name: 'Crocodile', local: '/images/animals/crocodile.jpg', fallback: 'https://source.unsplash.com/featured/?crocodile' },
-  { id: 3, name: 'Tiger', local: '/images/animals/tiger.jpg', fallback: 'https://source.unsplash.com/featured/?tiger' }
+  { id: 1, name: 'Giraffe' },
+  { id: 2, name: 'Crocodile' },
+  { id: 3, name: 'Tiger' }
 ]
 
 export default function HomePage(){
@@ -17,11 +17,10 @@ export default function HomePage(){
       <Box sx={{mb:4}}>
         <ImageWithFallback
           srcList={[
-            '/uploads/building.png',
-            '/uploads/building.jpg',
-            '/images/building.png',
             '/images/building.jpg',
-            'https://source.unsplash.com/1600x400/?zoo,building'
+            '/images/building.png',
+            '/uploads/building.jpg',
+            '/uploads/building.png',
           ]}
           alt="Zoo Building"
           style={{ width:'100%', height: 240, objectFit:'cover', borderRadius: 8 }}
@@ -43,14 +42,7 @@ export default function HomePage(){
             <Card>
               <CardMedia>
                 <ImageWithFallback
-                  srcList={(() => { const slug = sanitizeName(a.name); return [
-                    `/uploads/animals/${slug}.png`,
-                    `/uploads/animals/${slug}.jpg`,
-                    `/images/animals/${slug}.png`,
-                    `/images/animals/${slug}.jpg`,
-                    a.local,
-                    a.fallback
-                  ]})()}
+                  srcList={[...imageCandidatesForAnimal(a.name)]}
                   alt={a.name}
                   style={{width:'100%', height:180, objectFit:'cover'}}
                 />

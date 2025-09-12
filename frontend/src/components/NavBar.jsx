@@ -5,8 +5,11 @@ import { useNavigate } from 'react-router-dom'
 export default function NavBar(){
   const nav = useNavigate()
   const token = localStorage.getItem('token')
-  let role = null
-  try{ const payload = token && JSON.parse(atob(token.split('.')[1])); role = payload && payload.role }catch(e){}
+  // Minimal navbar per request: Only Animals + auth actions
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    nav('/')
+  }
   return (
     <AppBar position="sticky" color="primary">
       <Toolbar>
@@ -14,12 +17,14 @@ export default function NavBar(){
           <Typography variant='h6'>Zooverse</Typography>
         </Box>
         <Button color='inherit' onClick={()=>nav('/animals')}>Animals</Button>
-        <Button color='inherit' onClick={()=>nav('/bookings')}>Book</Button>
-        <Button color='inherit' onClick={()=>nav('/tickets')}>My Tickets</Button>
-        {role === 'admin' && <Button color='inherit' onClick={()=>nav('/admin/animals')}>Animals</Button>}
-        {role === 'admin' && <Button color='inherit' onClick={()=>nav('/admin/images')}>Images</Button>}
-        {role === 'admin' && <Button color='inherit' onClick={()=>nav('/admin/staff')}>Staff</Button>}
-        {!token && <Button color='inherit' onClick={()=>nav('/login')}>Login</Button>}
+        {!token ? (
+          <>
+            <Button color='inherit' onClick={()=>nav('/login')}>Login</Button>
+            <Button color='inherit' onClick={()=>nav('/register')}>Register</Button>
+          </>
+        ) : (
+          <Button color='inherit' onClick={handleLogout}>Logout</Button>
+        )}
       </Toolbar>
     </AppBar>
   )

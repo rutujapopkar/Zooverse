@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import { Box, Typography, Grid, Card, CardContent, CardMedia, Button, TextField, Stack } from '@mui/material'
 import ImageWithFallback from '../components/ImageWithFallback'
-import { sanitizeName } from '../utils/sanitizeName'
+import { imageCandidatesForAnimal } from '../utils/imageCandidates'
 import axios from 'axios'
 
 export default function AnimalsPage(){
@@ -27,13 +27,10 @@ export default function AnimalsPage(){
             <Card>
               <CardMedia>
                 <ImageWithFallback
-                  srcList={(() => { const slug = sanitizeName(a.name); return [
-                    `/uploads/animals/${slug}.png`,
-                    `/uploads/animals/${slug}.jpg`,
-                    `/images/animals/${slug}.png`,
-                    `/images/animals/${slug}.jpg`,
-                    a.photo_url || `https://source.unsplash.com/featured/?${encodeURIComponent(a.species||a.name||'animal')}`
-                  ]})()}
+                  srcList={[
+                    ...imageCandidatesForAnimal(a.name),
+                    ...(a.photo_url ? [a.photo_url] : [])
+                  ]}
                   alt={a.name}
                   style={{width:'100%', height:140, objectFit:'cover'}}
                 />
