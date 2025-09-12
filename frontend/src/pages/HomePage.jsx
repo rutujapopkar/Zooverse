@@ -1,12 +1,13 @@
 import React from 'react'
 import { Box, Typography, Button, Grid, Card, CardContent, CardMedia } from '@mui/material'
 import ImageWithFallback from '../components/ImageWithFallback'
+import { sanitizeName } from '../utils/sanitizeName'
 import { useNavigate } from 'react-router-dom'
 
 const demoAnimals = [
-  { id: 1, name: 'Lion', local: '/images/animals/lion.jpg', fallback: 'https://source.unsplash.com/featured/?lion' },
-  { id: 2, name: 'Elephant', local: '/images/animals/elephant.jpg', fallback: 'https://source.unsplash.com/featured/?elephant' },
-  { id: 3, name: 'Giraffe', local: '/images/animals/giraffe.jpg', fallback: 'https://source.unsplash.com/featured/?giraffe' }
+  { id: 1, name: 'Giraffe', local: '/images/animals/giraffe.jpg', fallback: 'https://source.unsplash.com/featured/?giraffe' },
+  { id: 2, name: 'Crocodile', local: '/images/animals/crocodile.jpg', fallback: 'https://source.unsplash.com/featured/?crocodile' },
+  { id: 3, name: 'Tiger', local: '/images/animals/tiger.jpg', fallback: 'https://source.unsplash.com/featured/?tiger' }
 ]
 
 export default function HomePage(){
@@ -15,7 +16,13 @@ export default function HomePage(){
     <Box sx={{py:6}}>
       <Box sx={{mb:4}}>
         <ImageWithFallback
-          srcList={[ '/uploads/building.jpg', '/images/building.jpg', 'https://source.unsplash.com/1600x400/?zoo,building' ]}
+          srcList={[
+            '/uploads/building.png',
+            '/uploads/building.jpg',
+            '/images/building.png',
+            '/images/building.jpg',
+            'https://source.unsplash.com/1600x400/?zoo,building'
+          ]}
           alt="Zoo Building"
           style={{ width:'100%', height: 240, objectFit:'cover', borderRadius: 8 }}
         />
@@ -35,7 +42,18 @@ export default function HomePage(){
           <Grid item key={a.id} xs={12} sm={4}>
             <Card>
               <CardMedia>
-                <ImageWithFallback srcList={[ `/uploads/animals/${a.name.toLowerCase()}.jpg`, a.local, a.fallback ]} alt={a.name} style={{width:'100%', height:180, objectFit:'cover'}} />
+                <ImageWithFallback
+                  srcList={(() => { const slug = sanitizeName(a.name); return [
+                    `/uploads/animals/${slug}.png`,
+                    `/uploads/animals/${slug}.jpg`,
+                    `/images/animals/${slug}.png`,
+                    `/images/animals/${slug}.jpg`,
+                    a.local,
+                    a.fallback
+                  ]})()}
+                  alt={a.name}
+                  style={{width:'100%', height:180, objectFit:'cover'}}
+                />
               </CardMedia>
               <CardContent>
                 <Typography variant="h6">{a.name}</Typography>

@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import { Box, Typography, Grid, Card, CardContent, Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material'
 import axios from 'axios'
+import { useSnackbar } from '../components/SnackbarProvider'
 
 function AnimalForm({open, onClose, onSave, initial}){
   const [form, setForm] = useState(initial || {})
@@ -27,6 +28,7 @@ export default function AdminAnimals(){
   const [animals, setAnimals] = useState([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const { notify } = useSnackbar()
 
   const token = localStorage.getItem('token')
   const headers = token ? { Authorization: `Bearer ${token}` } : {}
@@ -42,13 +44,13 @@ export default function AdminAnimals(){
   function handleCreate(){ setEditing(null); setOpen(true) }
   function handleEdit(a){ setEditing(a); setOpen(true) }
   function handleDelete(a){
-    axios.delete(`/api/animals/${a.id}`, { headers }).then(()=>fetchList()).catch(e=>console.error(e))
+    axios.delete(`/api/animals/${a.id}`, { headers }).then(()=>{ notify('Deleted animal','success'); fetchList() }).catch(e=>{ console.error(e); notify('Delete failed','error') })
   }
   function handleSave(data){
     if(editing){
-      axios.put(`/api/animals/${editing.id}`, data, { headers }).then(()=>{ setOpen(false); fetchList() }).catch(e=>console.error(e))
+      axios.put(`/api/animals/${editing.id}`, data, { headers }).then(()=>{ setOpen(false); notify('Updated animal','success'); fetchList() }).catch(e=>{ console.error(e); notify('Update failed','error') })
     } else {
-      axios.post('/api/animals', data, { headers }).then(()=>{ setOpen(false); fetchList() }).catch(e=>console.error(e))
+      axios.post('/api/animals', data, { headers }).then(()=>{ setOpen(false); notify('Created animal','success'); fetchList() }).catch(e=>{ console.error(e); notify('Create failed','error') })
     }
   }
 

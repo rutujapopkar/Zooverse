@@ -1,16 +1,21 @@
 import React, {useEffect, useState} from 'react'
 import { Box, Typography, Grid, Card, CardContent, Button } from '@mui/material'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 export default function MyTickets(){
   const [tickets, setTickets] = useState([])
+  const navigate = useNavigate()
 
   useEffect(()=>{
     const token = localStorage.getItem('token')
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
     axios.get('/api/bookings', { headers })
       .then(r=>setTickets(r.data))
-      .catch(e=>console.error(e))
+      .catch(e=>{
+        if (e?.response?.status === 401) navigate('/login')
+        else console.error(e)
+      })
   }, [])
 
   const downloadQR = (b) => {

@@ -1,5 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory
-from .models import db, User, Animal, HealthRecord
+try:
+    # When run as a module: python -m backend.app
+    from .models import db, User, Animal, HealthRecord, Booking, PricingRule
+except ImportError:  # When run directly: python app.py from backend folder
+    from models import db, User, Animal, HealthRecord, Booking, PricingRule
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_cors import CORS
 import os
@@ -26,6 +30,32 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        # Seed default admin if missing
+        try:
+            if not User.query.filter_by(username='Admin123').first():
+                admin = User(username='Admin123', role='admin')
+                admin.set_password('zoosys')
+                db.session.add(admin)
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+        # Seed sample animals if none exist
+        try:
+            if Animal.query.count() == 0:
+                samples = [
+                    Animal(name='Giraffe', species='Giraffa camelopardalis', description='Tall and graceful herbivore with long necks.'),
+                    Animal(name='Crocodile', species='Crocodylus', description='Large aquatic reptile, powerful jaws and armored skin.'),
+                    Animal(name='Tiger', species='Panthera tigris', description='Majestic big cat with orange coat and black stripes.')
+                ]
+                db.session.add_all(samples)
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    # Path to built frontend (Vite build output)
+    FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
+    ASSETS_DIR = os.path.join(FRONTEND_DIST, 'assets')
+    IMAGES_DIR = os.path.join(FRONTEND_DIST, 'images')
 
     @app.route('/api/register', methods=['POST'])
     def register():
@@ -231,8 +261,6 @@ def create_app():
         return jsonify({'msg': 'deleted'})
 
     # Booking endpoints (customers create, admin can view/manage)
-    from .models import Booking
-    from .models import PricingRule
 
     def generate_qr_base64(text: str) -> str:
         img = qrcode.make(text)
@@ -508,6 +536,42 @@ def create_app():
         if any(k in lower for k in ['direction','address','where']):
             return jsonify({'reply': 'We are located at Smart Zoo, City Center. Parking is available on-site.'})
         return jsonify({'reply': "I'm not sure, but a human will help soon. Try asking about hours, pricing, or booking."})
+
+    # --- Frontend static file serving (production/dev fallback) ---
+    # Serve Vite build outputs so the app works without running the Vite dev server.
+    @app.route('/assets/<path:filename>')
+    def serve_assets(filename):
+        # hashed JS/CSS and other compiled assets live here after build
+        return send_from_directory(ASSETS_DIR, filename)
+
+    @app.route('/images/<path:filename>')
+    def serve_images(filename):
+        # public images (copied by Vite) are under dist/images
+        return send_from_directory(IMAGES_DIR, filename)
+
+    @app.route('/favicon.svg')
+    def serve_favicon():
+        return send_from_directory(FRONTEND_DIST, 'favicon.svg')
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_spa(path):
+        # Let API and uploads be handled by their routes
+        if path.startswith('api/') or path.startswith('uploads/'):
+            return jsonify({'msg': 'Not Found'}), 404
+        # If a direct file exists in dist, serve it (e.g., index.html, manifest, etc.)
+        requested = os.path.join(FRONTEND_DIST, path)
+        if path and os.path.isfile(requested):
+            # serve the exact file
+            directory = os.path.dirname(requested)
+            filename = os.path.basename(requested)
+            return send_from_directory(directory, filename)
+        # Otherwise, fall back to SPA index.html
+        index_path = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.isfile(index_path):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+        # If the build is missing, show an informative error
+        return jsonify({'msg': 'Frontend build not found. Please run npm run build in frontend.'}), 500
 
     return app
 

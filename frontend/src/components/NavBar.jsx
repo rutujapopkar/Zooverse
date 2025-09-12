@@ -16,14 +16,10 @@ export default function NavBar(){
         <Button color='inherit' onClick={()=>nav('/animals')}>Animals</Button>
         <Button color='inherit' onClick={()=>nav('/bookings')}>Book</Button>
         <Button color='inherit' onClick={()=>nav('/tickets')}>My Tickets</Button>
-        <Button color='inherit' onClick={()=>nav('/admin')}>Admin</Button>
-        {role === 'admin' && (
-          <Button color='inherit' onClick={()=>nav('/admin/animals')}>Manage Animals</Button>
-        )}
-        {role === 'admin' && (
-          <Button color='inherit' onClick={()=>nav('/admin/images')}>Images</Button>
-        )}
-        <Button color='inherit' onClick={()=>nav('/login')}>Login</Button>
+        {role === 'admin' && <Button color='inherit' onClick={()=>nav('/admin/animals')}>Animals</Button>}
+        {role === 'admin' && <Button color='inherit' onClick={()=>nav('/admin/images')}>Images</Button>}
+        {role === 'admin' && <Button color='inherit' onClick={()=>nav('/admin/staff')}>Staff</Button>}
+        {!token && <Button color='inherit' onClick={()=>nav('/login')}>Login</Button>}
       </Toolbar>
     </AppBar>
   )

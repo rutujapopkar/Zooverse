@@ -1,9 +1,13 @@
-Place your JPEG images here for local display in the app.
+Place your image files here for local display in the app.
 
-Expected filenames:
-- /images/building.jpg (zoo building banner)
-- /images/animals/lion.jpg
-- /images/animals/elephant.jpg
-- /images/animals/giraffe.jpg
+Supported filenames (JPG or PNG):
+- /images/building.jpg or /images/building.png (zoo building banner)
+- /images/animals/lion.jpg or /images/animals/lion.png
+- /images/animals/elephant.jpg or /images/animals/elephant.png
+- /images/animals/giraffe.jpg or /images/animals/giraffe.png
 
-Tip: Use 1200x600 or similar for the building banner, and around 800x600 for animal cards.
+Naming:
+- Lowercase and only letters/numbers are used in matching. Spaces and punctuation are removed.
+- Example: "White Tiger!" → whitetiger.jpg or whitetiger.png
+
+Tip: Use ~1200x600 for the building banner, and ~800x600 for animal cards.

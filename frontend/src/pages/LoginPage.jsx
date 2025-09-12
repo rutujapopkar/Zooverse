@@ -1,19 +1,21 @@
 import React, {useState} from 'react'
 import { TextField, Button, Box, Typography, Link } from '@mui/material'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 export default function LoginPage(){
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
 
   const doLogin = async () => {
     try{
       const r = await axios.post('/api/login', { username, password })
       const token = r.data.access_token
       localStorage.setItem('token', token)
-      navigate('/dashboard')
+      const dest = (location.state && location.state.from) || '/dashboard'
+      navigate(dest)
     }catch(e){
       alert('login failed')
     }
