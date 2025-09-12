@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { Box, Typography, Grid, Card, CardContent, CardMedia, Button } from '@mui/material'
+import ImageWithFallback from '../components/ImageWithFallback'
 import axios from 'axios'
 
 export default function AnimalsPage(){
@@ -18,7 +19,16 @@ export default function AnimalsPage(){
         {animals.map(a=> (
           <Grid item key={a.id} xs={12} sm={6} md={4}>
             <Card>
-              {a.photo_url && <CardMedia component="img" height="140" image={a.photo_url} alt={a.name} />}
+              <CardMedia>
+                <ImageWithFallback
+                  srcList={[
+                    `/images/animals/${(a.name||'').toLowerCase()}.jpg`,
+                    a.photo_url || `https://source.unsplash.com/featured/?${encodeURIComponent(a.species||a.name||'animal')}`
+                  ]}
+                  alt={a.name}
+                  style={{width:'100%', height:140, objectFit:'cover'}}
+                />
+              </CardMedia>
               <CardContent>
                 <Typography variant="h6">{a.name}</Typography>
                 <Typography color="text.secondary">{a.species}</Typography>

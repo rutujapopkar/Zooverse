@@ -16,6 +16,7 @@ import theme from './theme'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
 import AdminDashboard from './pages/AdminDashboard'
+import ChatBot from './components/ChatBot'
 
 function App(){
   return (
@@ -38,6 +39,7 @@ function App(){
           </Routes>
         </Container>
         <Footer />
+        <ChatBot />
       </BrowserRouter>
     </ThemeProvider>
   )
