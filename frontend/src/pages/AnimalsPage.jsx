@@ -22,6 +22,7 @@ export default function AnimalsPage(){
               <CardMedia>
                 <ImageWithFallback
                   srcList={[
+                    `/uploads/animals/${(a.name||'').toLowerCase()}.jpg`,
                     `/images/animals/${(a.name||'').toLowerCase()}.jpg`,
                     a.photo_url || `https://source.unsplash.com/featured/?${encodeURIComponent(a.species||a.name||'animal')}`
                   ]}

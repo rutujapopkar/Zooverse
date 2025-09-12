@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from .models import db, User, Animal, HealthRecord
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_cors import CORS
@@ -20,6 +20,9 @@ def create_app():
     # enable CORS for frontend apps (adjust origins in production)
     CORS(app)
     jwt = JWTManager(app)
+    # uploads folder
+    upload_dir = os.path.join(os.getcwd(), 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
 
     with app.app_context():
         db.create_all()
@@ -64,9 +67,10 @@ def create_app():
             return jsonify({'msg': 'forbidden'}), 403
         data = request.get_json() or {}
         dob = None
-        if data.get('date_of_birth'):
+        dob_str = data.get('date_of_birth')
+        if dob_str:
             try:
-                dob = datetime.fromisoformat(data.get('date_of_birth')).date()
+                dob = datetime.fromisoformat(dob_str).date()
             except Exception:
                 return jsonify({'msg': 'invalid date format, use ISO YYYY-MM-DD'}), 400
         animal = Animal(
@@ -110,10 +114,14 @@ def create_app():
             if field in data:
                 setattr(a, field, data[field])
         if 'date_of_birth' in data:
-            try:
-                a.date_of_birth = datetime.fromisoformat(data.get('date_of_birth')).date()
-            except Exception:
-                return jsonify({'msg': 'invalid date format'}), 400
+            dob_str = data.get('date_of_birth')
+            if dob_str:
+                try:
+                    a.date_of_birth = datetime.fromisoformat(dob_str).date()
+                except Exception:
+                    return jsonify({'msg': 'invalid date format'}), 400
+            else:
+                a.date_of_birth = None
         db.session.commit()
         return jsonify(a.to_dict())
 
@@ -140,7 +148,8 @@ def create_app():
         a = Animal.query.get_or_404(animal_id)
         data = request.get_json() or {}
         try:
-            rec_date = datetime.fromisoformat(data.get('date')).date() if data.get('date') else datetime.utcnow().date()
+            date_str = data.get('date')
+            rec_date = datetime.fromisoformat(date_str).date() if date_str else datetime.utcnow().date()
         except Exception:
             return jsonify({'msg': 'invalid date format'}), 400
         hr = HealthRecord(
@@ -426,6 +435,37 @@ def create_app():
         db.session.commit()
         return jsonify({'msg': 'payment recorded', 'booking': b.to_dict()})
 
+    # Image uploads (admin-only)
+    @app.route('/api/upload-image', methods=['POST'])
+    @jwt_required()
+    def upload_image():
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'msg': 'forbidden'}), 403
+        if 'file' not in request.files:
+            return jsonify({'msg': 'no file'}), 400
+        f = request.files['file']
+        if not f.filename:
+            return jsonify({'msg': 'empty filename'}), 400
+        # allow only jpeg/jpg/png
+        fname = f.filename
+        ext = os.path.splitext(fname)[1].lower()
+        if ext not in ['.jpg', '.jpeg', '.png']:
+            return jsonify({'msg': 'only .jpg, .jpeg, .png allowed'}), 400
+        # optional target name, e.g., building.jpg or animals/lion.jpg
+        target = request.form.get('target') or fname
+        safe_target = target.replace('..','').lstrip('/\\')
+        full_dir = os.path.join(upload_dir, os.path.dirname(safe_target))
+        os.makedirs(full_dir, exist_ok=True)
+        full_path = os.path.join(upload_dir, safe_target)
+        f.save(full_path)
+        url = "/uploads/" + safe_target.replace("\\", "/")
+        return jsonify({'msg':'uploaded', 'url': url})
+
+    @app.route('/uploads/<path:filename>')
+    def serve_upload(filename):
+        return send_from_directory(upload_dir, filename)
+
     # Simple root index for quick checks
     @app.route('/', methods=['GET'])
     def index():
@@ -437,6 +477,37 @@ def create_app():
             ],
             'note': 'This is an API server; use /api/* endpoints or run the frontend.'
         })
+
+    @app.route('/api/chat', methods=['POST'])
+    def chat():
+        # very simple dynamic chatbot: looks for intents and responds.
+        data = request.get_json() or {}
+        msg = (data.get('message') or '').strip()
+        if not msg:
+            return jsonify({'reply': "Please type a question about hours, pricing, or bookings."})
+
+        lower = msg.lower()
+        if any(k in lower for k in ['hi','hello','hey']):
+            return jsonify({'reply': 'Hello! How can I help you with your visit today?'})
+        if any(k in lower for k in ['hour','open','close','time']):
+            return jsonify({'reply': 'We are open daily from 9:00 AM to 6:00 PM.'})
+        if any(k in lower for k in ['price','ticket','cost','inr']):
+            # derive a sample price using today, default slot, 2 adults / 1 child
+            from datetime import datetime as dt
+            today = dt.utcnow().date()
+            try:
+                total_cents, currency = compute_price_for(today, '09:00-11:00', 2, 1)
+                amount = f"₹{round(total_cents/100):,}"
+                return jsonify({'reply': f'Today\'s indicative price for a family (2 adults, 1 child) is around {amount} {currency}. Actual price varies by date/time.'})
+            except Exception:
+                return jsonify({'reply': 'Standard prices start from ₹200 for adults and ₹100 for children. Final price depends on date/time.'})
+        if any(k in lower for k in ['book','booking','tickets']):
+            return jsonify({'reply': 'You can book tickets on the Bookings page. After payment, your QR code appears in My Tickets.'})
+        if any(k in lower for k in ['refund','cancel']):
+            return jsonify({'reply': 'Please contact support at support@zoo.example for refund/cancellation assistance.'})
+        if any(k in lower for k in ['direction','address','where']):
+            return jsonify({'reply': 'We are located at Smart Zoo, City Center. Parking is available on-site.'})
+        return jsonify({'reply': "I'm not sure, but a human will help soon. Try asking about hours, pricing, or booking."})
 
     return app
 

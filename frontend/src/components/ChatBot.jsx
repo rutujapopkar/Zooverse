@@ -25,12 +25,20 @@ export default function ChatBot(){
     { role: 'bot', text: 'Hi! I\'m Zoo Assistant. Ask me about hours, pricing, or bookings.' }
   ])
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = input.trim()
     if (!text) return
-    const bot = replyFor(text)
-    setMessages(m => [...m, { role: 'user', text }, { role: 'bot', text: bot }])
+    setMessages(m => [...m, { role: 'user', text }])
     setInput('')
+    try{
+      const res = await fetch('/api/chat', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ message: text }) })
+      const data = await res.json()
+      if(!res.ok || !data.reply) throw new Error('bad response')
+      setMessages(m => [...m, { role: 'bot', text: data.reply }])
+    }catch(err){
+      const bot = replyFor(text)
+      setMessages(m => [...m, { role: 'bot', text: bot }])
+    }
   }
 
   return (

@@ -20,6 +20,9 @@ export default function NavBar(){
         {role === 'admin' && (
           <Button color='inherit' onClick={()=>nav('/admin/animals')}>Manage Animals</Button>
         )}
+        {role === 'admin' && (
+          <Button color='inherit' onClick={()=>nav('/admin/images')}>Images</Button>
+        )}
         <Button color='inherit' onClick={()=>nav('/login')}>Login</Button>
       </Toolbar>
     </AppBar>

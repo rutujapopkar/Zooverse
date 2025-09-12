@@ -16,6 +16,7 @@ import theme from './theme'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminImages from './pages/AdminImages'
 import ChatBot from './components/ChatBot'
 
 function App(){
@@ -34,6 +35,7 @@ function App(){
             <Route path="/animals/:id" element={<AnimalDetail/>} />
             <Route path="/admin" element={<AdminDashboard/>} />
             <Route path="/admin/animals" element={<AdminAnimals/>} />
+            <Route path="/admin/images" element={<AdminImages/>} />
             <Route path="/bookings" element={<BookingPage/>} />
             <Route path="/tickets" element={<MyTickets/>} />
           </Routes>
