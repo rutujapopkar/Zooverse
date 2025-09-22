@@ -60,7 +60,7 @@ export default function AdminStaff(){
             <Card>
               <CardContent>
                 <Typography variant="h6">{u.username}</Typography>
-                <Typography color="text.secondary">Role: {u.role}</Typography>
+                <Typography color="text.secondary" sx={{display:'flex', alignItems:'center', gap:1}}>Role: <span className={`status-badge role-${u.role}`}>{u.role}</span></Typography>
                 <Box sx={{mt:2, display:'flex', gap:1}}>
                   <Button size="small" onClick={()=>handleEdit(u)}>Edit</Button>
                   <Button size="small" color="error" onClick={()=>handleDelete(u)}>Delete</Button>

@@ -40,8 +40,9 @@ def test_staff_and_booking(tmp_path):
     booking = rv.get_json()
     assert 'qr_code_b64' in booking
 
-    # admin list bookings
-    rv = c.get('/api/bookings', headers=headers)
-    assert rv.status_code == 200
-    bs = rv.get_json()
-    assert len(bs) >= 1
+    # admin list bookings (paginated)
+    rv = c.get('/api/bookings?page=1&per_page=10', headers=headers)
+    assert rv.status_code == 200, rv.data
+    payload = rv.get_json()
+    assert 'data' in payload and 'meta' in payload, f"unexpected bookings response shape: {payload}"
+    assert len(payload['data']) >= 1

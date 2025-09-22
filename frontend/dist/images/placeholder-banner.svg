@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" role="img" aria-label="Placeholder image">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b4d2f"/>
+      <stop offset="100%" stop-color="#266b42"/>
+    </linearGradient>
+    <pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <rect width="40" height="40" fill="none" stroke="#2d8052" stroke-width="1" opacity="0.25" />
+    </pattern>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <rect width="800" height="450" fill="url(#p)"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Segoe UI, Arial" font-size="42" fill="#d2f5e2" font-weight="600" letter-spacing="1">IMAGE COMING SOON</text>
+  <text x="50%" y="50%" dy="52" dominant-baseline="middle" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" fill="#b1e9cc">Add /images/[folder]/slug.jpg</text>
+</svg>

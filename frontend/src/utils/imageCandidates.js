@@ -1,15 +1,11 @@
-import { sanitizeName } from './sanitizeName'
-
-// Return candidate local src paths for a given animal name using only the exact sanitized name
-// Example: Tiger -> tries tiger.png/jpg only (no tigewr); Giraffe -> giraffe only.
+// Extremely conservative candidate generator to avoid floods of 404s.
+// We now ONLY try the exact animal name with .jpg then .jpeg. Nothing else.
+// Any broader guessing (lowercase/collapsed/uploads) created a lot of failed requests.
 export function imageCandidatesForAnimal(name) {
-  const slug = sanitizeName(name)
-  const title = slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : slug
-  // Prefer public images (you confirmed all are .jpg), then uploads. Try lowercase and Titlecase filenames.
+  if(!name) return []
+  const original = String(name)
   return [
-    `/images/animals/${slug}.jpg`,
-    `/images/animals/${title}.jpg`,
-    `/uploads/animals/${slug}.jpg`,
-    `/uploads/animals/${title}.jpg`,
+    `/images/animals/${original}.jpeg`,
+    `/images/animals/${original}.jpg`
   ]
 }

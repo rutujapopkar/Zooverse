@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import { Box, Typography, Grid, Card, CardContent, Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material'
 import axios from 'axios'
+import { normalizeList } from '../utils/normalize'
 import { useSnackbar } from '../components/SnackbarProvider'
 
 function AnimalForm({open, onClose, onSave, initial}){
@@ -38,7 +39,9 @@ export default function AdminAnimals(){
   }, [])
 
   function fetchList(){
-    axios.get('/api/animals', { headers }).then(r=>setAnimals(r.data)).catch(e=>console.error(e))
+    axios.get('/api/animals', { headers })
+      .then(r=>{ const arr = normalizeList(r.data); if(!Array.isArray(r.data?.data)) console.warn('Unexpected /api/animals shape:', r.data); setAnimals(arr) })
+      .catch(e=>{ console.error('Failed to load animals', e); setAnimals([]) })
   }
 
   function handleCreate(){ setEditing(null); setOpen(true) }
@@ -59,7 +62,7 @@ export default function AdminAnimals(){
       <Typography variant="h4" gutterBottom>Admin — Animals</Typography>
       <Button variant="contained" onClick={handleCreate} sx={{mb:2}}>Create Animal</Button>
       <Grid container spacing={2}>
-        {animals.map(a=> (
+        {Array.isArray(animals) && animals.map(a=> (
           <Grid item xs={12} sm={6} md={4} key={a.id}>
             <Card>
               <CardContent>
@@ -74,6 +77,11 @@ export default function AdminAnimals(){
             </Card>
           </Grid>
         ))}
+        {!Array.isArray(animals) || animals.length===0 ? (
+          <Grid item xs={12}>
+            <Typography variant="body2" sx={{opacity:.8}}>No animals found.</Typography>
+          </Grid>
+        ) : null}
       </Grid>
       <AnimalForm open={open} onClose={()=>setOpen(false)} onSave={handleSave} initial={editing} />
     </Box>

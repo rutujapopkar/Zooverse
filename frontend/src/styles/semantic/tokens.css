@@ -1,0 +1,119 @@
+:root {
+  /* Colors mapped from tailwind.config.js */
+  /* Earthy Dark Theme (base) */
+  /* Brand explicit aliases (primary brand family) */
+  --color-brand-primary: #2A4B42; /* deep brand green for navigation / key surfaces */
+  --color-brand-primary-hover: #335a4f;
+  --color-brand-accent: #77A353; /* leafy accent (maps to accent) */
+  --color-brand-accent-hover: #6a9449;
+  --color-bg: #121a17; /* deep green-black */
+  --color-bg-alt: #18231f;
+  --color-surface: #1e2b26; /* dark forest surface */
+  --color-surface-raised: #24342e;
+  --color-surface-hover: #2b3d36;
+  --color-border-subtle: #23332d;
+  --color-border: #2f423b;
+  --color-border-strong: #3c5149;
+  --color-accent: #77A353; /* leafy green accent */
+  --color-accent-soft: #6a9449; /* hover/darken */
+  --color-accent-fg: #f4fbe9; /* text on accent */
+  --color-danger: #DC3545; /* error */
+  --color-danger-fg: #FFE9EC;
+  --color-warn: #FFC107; /* warning */
+  --color-warn-fg: #FFF6DB;
+  --color-info: #3B4C9B; /* optional indigo info */
+  --color-info-fg: #E4E9FA;
+  --color-success: #28A745; /* success distinct from accent */
+  --color-success-fg: #E1F8E9;
+
+  /* Semantic text tokens (base = default readable on bg, subtle = de-emphasized, strong = high-emphasis) */
+  --color-text: #e9f4ef; /* base readable on dark */
+  --color-text-subtle: #b0c2bb; /* secondary */
+  --color-text-muted: #94a8a0; /* tertiary */
+  --color-text-strong: #ffffff; /* high emphasis */
+  --color-text-inverse: #1C1C1C; /* dark text when on light surfaces */
+  --color-text-inverse-subtle: #3f524b;
+  --color-text-accent: #f4fbe9;
+
+  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-soft: 0 2px 4px -1px rgba(0,0,0,.4), 0 4px 18px -4px rgba(0,0,0,.35);
+  --shadow-focus: 0 0 0 3px rgba(34,197,94,.35);
+
+  /* Focus ring theming */
+  --focus-ring-color: 34 197 94; /* RGB triplet used for constructing rings */
+  --focus-ring: 0 0 0 3px rgba(var(--focus-ring-color) / 0.45);
+
+  --z-overlay: 60;
+  --z-toast: 70;
+  --z-modal: 80;
+  --z-popover: 90;
+
+  /* Expanded max width for large laptop/desktop */
+  --container-max: 1600px; /* widened for broader laptop screens */
+  /* Narrow content readable line length cap */
+  --content-max: 1100px;
+  --transition-fast: 120ms;
+  --transition-base: 260ms;
+}
+
+[data-theme='light'] {
+  /* Earthy Light Theme */
+  --color-brand-primary: #2A4B42;
+  --color-brand-primary-hover: #356153;
+  --color-brand-accent: #77A353;
+  --color-brand-accent-hover: #6a9449;
+  --color-bg: #F4F1EB; /* warm off-white */
+  --color-bg-alt: #ECE7DF; /* subtle panel background */
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F8F5F0;
+  --color-surface-hover: #EEE9E1;
+  --color-border-subtle: #E2DCD3;
+  --color-border: #D2CBC1;
+  --color-border-strong: #BFB6AA;
+  --color-accent: #77A353;
+  --color-accent-soft: #6a9449;
+  --color-accent-fg: #F4FBE9;
+  --color-danger: #DC3545;
+  --color-danger-fg: #6B111A;
+  --color-warn: #FFC107;
+  --color-warn-fg: #5F4512;
+  --color-info: #3B4C9B;
+  --color-info-fg: #172047;
+  --color-success: #28A745;
+  --color-success-fg: #0f3d19;
+  /* Text overrides */
+  --color-text: #1C1C1C;
+  --color-text-subtle: #4E534F;
+  --color-text-muted: #6A6F6C;
+  --color-text-strong: #111111;
+  --color-text-inverse: #FFFFFF;
+  --color-text-inverse-subtle: #EDEBE6;
+  --color-text-accent: #2A4B42;
+  color-scheme: light;
+  --focus-ring-color: 95 208 104; /* Slightly adjusted for light theme */
+  --focus-ring: 0 0 0 3px rgba(var(--focus-ring-color) / 0.55);
+}
+
+/* High contrast accessibility mode */
+[data-contrast='high'] {
+  --color-bg: #000000;
+  --color-bg-alt: #050b09;
+  --color-surface: #0d1411;
+  --color-surface-raised: #16201b;
+  --color-surface-hover: #1f2c26;
+  --color-border-subtle: #2b3a34;
+  --color-border: #3c4d46;
+  --color-border-strong: #4c5f57;
+  --color-accent: #20d08a;
+  --color-accent-soft: #1bb67b;
+  --color-accent-fg: #e0fff5;
+  color-scheme: dark;
+  filter: contrast(1.05) saturate(1.05);
+}

@@ -1,5 +1,8 @@
 import React from 'react'
 import { Box, Typography, Grid, Paper, List, ListItem, ListItemText, Button, Stack } from '@mui/material'
+import AdminLayout from '../components/admin/AdminLayout'
+import StatCard from '../components/admin/StatCard'
+import AdminSearchBar from '../components/admin/AdminSearchBar'
 import { useNavigate } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -18,65 +21,62 @@ const inrFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'IN
 
 export default function AdminDashboard(){
   const nav = useNavigate()
+  const stats = [
+    { key:'animals', label:'Animals', icon:'🦁', value:128 },
+    { key:'tickets', label:'Tickets Sold (Week)', icon:'🎟️', value:3140 },
+    { key:'doctors', label:'Doctors', icon:'👨‍⚕️', value:6 },
+    { key:'revenue', label:'Revenue (Week)', icon:'💰', value: inrFmt.format(865000) }
+  ]
   return (
-    <Box sx={{display:'flex', gap:2, mt:4}}>
-      <Paper sx={{width:220, p:2}} elevation={1}>
-        <Typography variant="h6">Admin</Typography>
-        <List>
-          <ListItem button onClick={()=>nav('/admin')}>
-            <ListItemText primary="Dashboard" />
-          </ListItem>
-          <ListItem button onClick={()=>nav('/admin/animals')}>
-            <ListItemText primary="Animal Management" />
-          </ListItem>
-          <ListItem button onClick={()=>nav('/admin/staff')}>
-            <ListItemText primary="Staff Management" />
-          </ListItem>
-          <ListItem button onClick={()=>nav('/admin/images')}>
-            <ListItemText primary="Images" />
-          </ListItem>
-        </List>
-      </Paper>
-      <Box sx={{flex:1}}>
-        <Typography variant="h4">Analytics Overview</Typography>
-        <Stack direction="row" spacing={1} sx={{my:2}}>
-          <Button variant="contained" color="success" onClick={()=>nav('/admin/animals')}>Manage Animals</Button>
-          <Button variant="outlined" onClick={()=>nav('/admin/staff')}>Manage Staff</Button>
-          <Button variant="outlined" onClick={()=>nav('/admin/images')}>Manage Images</Button>
-        </Stack>
-        <Grid container spacing={2} sx={{mt:2}}>
-          <Grid item xs={12} md={8}>
-            <Paper sx={{p:2}}>
-              <Typography variant="h6">Ticket Sales (This week)</Typography>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="sales" stroke="#2e7d32" strokeWidth={3} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Paper sx={{p:2}}>
-              <Typography variant="h6">Key Metrics</Typography>
-              <List>
-                <ListItem>
-                  <ListItemText primary={`Today's Sales: ${inrFmt.format(420)}`} />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary={`Visitors: ${new Intl.NumberFormat('en-IN').format(1230)}`} />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary={`Revenue: ${inrFmt.format(3200)}`} />
-                </ListItem>
-              </List>
-            </Paper>
-          </Grid>
+    <AdminLayout searchBar={<AdminSearchBar onSearch={(q)=>console.log('admin search', q)} />}> 
+    <div className="fadeIn">
+  <Typography variant="h4" sx={{mb:1, color:'#fff'}}>Dashboard Overview</Typography>
+      <p className="small-muted" style={{margin:0}}>Operational snapshot – figures auto-refresh planned in future iteration.</p>
+      <div className="admin-stats">
+        {stats.map(s => (<StatCard key={s.key} icon={s.icon} label={s.label} value={s.value} kind={s.key} />))}
+      </div>
+      <Stack direction="row" spacing={1} sx={{my:2}}>
+        <Button variant="contained" color="success" onClick={()=>nav('/admin/animals')} sx={{color:'#fff'}}>Manage Animals</Button>
+        <Button variant="outlined" onClick={()=>nav('/admin/staff')}
+          sx={{color:'#fff', borderColor:'rgba(255,255,255,0.6)', '&:hover':{borderColor:'#fff', background:'rgba(255,255,255,0.08)'}}}>Manage Staff</Button>
+        <Button variant="outlined" onClick={()=>nav('/admin/images')}
+          sx={{color:'#fff', borderColor:'rgba(255,255,255,0.6)', '&:hover':{borderColor:'#fff', background:'rgba(255,255,255,0.08)'}}}>Manage Images</Button>
+        <Button variant="outlined" onClick={()=>nav('/admin/tickets')}
+          sx={{color:'#fff', borderColor:'rgba(255,255,255,0.6)', '&:hover':{borderColor:'#fff', background:'rgba(255,255,255,0.08)'}}}>Tickets</Button>
+      </Stack>
+      <Grid container spacing={2} sx={{mt:1}}>
+        <Grid item xs={12} md={8}>
+          <Paper sx={{p:2}} className="fadeIn">
+            <Typography variant="h6">Ticket Sales (This week)</Typography>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip contentStyle={{background:'rgba(0,0,0,.85)', border:'none', borderRadius:6, color:'#fff'}} />
+                <Line type="monotone" dataKey="sales" stroke="#2e7d32" strokeWidth={3} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Paper>
         </Grid>
-      </Box>
-    </Box>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{p:2}} className="fadeIn" style={{animationDelay:'80ms'}}>
+            <Typography variant="h6">Key Metrics</Typography>
+            <List>
+              <ListItem>
+                <ListItemText primary={`Today's Sales: ${inrFmt.format(420)}`} />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary={`Visitors: ${new Intl.NumberFormat('en-IN').format(1230)}`} />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary={`Revenue: ${inrFmt.format(3200)}`} />
+              </ListItem>
+            </List>
+          </Paper>
+        </Grid>
+      </Grid>
+    </div>
+    </AdminLayout>
   )
 }

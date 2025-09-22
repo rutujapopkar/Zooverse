@@ -1,0 +1,21 @@
+/* Tailwind base extensions (split to reduce IDE false positives) */
+@layer base {
+  :root { --app-accent:#18b078; --app-radius:10px; color-scheme: dark; }
+  html { scroll-behavior:smooth; }
+  body { @apply bg-bg text-neutral-100 font-sans antialiased; }
+  h1,h2,h3,h4,h5,h6 { @apply font-semibold tracking-tight text-neutral-100; }
+  h1 { @apply text-4xl md:text-5xl; }
+  h2 { @apply text-3xl md:text-4xl; }
+  h3 { @apply text-2xl; }
+  p { @apply leading-relaxed; }
+  a { @apply text-accent-soft hover:text-accent transition-colors; }
+  ::selection { @apply bg-accent/40 text-accent-fg; }
+  :focus-visible { outline:2px solid #22c58e; outline-offset:2px; }
+  button:focus-visible { outline:2px solid #22c58e; outline-offset:2px; }
+}
+
+@layer components {
+  .btn-primary { @apply inline-flex items-center justify-center rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium px-5 py-2.5 shadow-soft hover:brightness-105 active:scale-95 transition-all; }
+  .btn-outline { @apply inline-flex items-center justify-center rounded-md border border-border-strong text-accent-soft hover:bg-surface-hover px-5 py-2.5 font-medium transition-colors; }
+  .card { @apply rounded-lg border border-border bg-surface/80 backdrop-blur-sm p-5 shadow-soft hover:border-border-strong transition-colors; }
+}

@@ -1,0 +1,17 @@
+@import './tokens.css';
+@import './layout.css';
+@import './components.css';
+@import './navbar.css';
+
+/* Transitional overrides: we still have Tailwind classes until refactor complete */
+body { font-family: var(--font-sans); }
+
+html { scroll-behavior:smooth; }
+@media (prefers-reduced-motion: reduce){ html { scroll-behavior:auto; } }
+
+/* Scoped hero background: targeting exact generated MUI Box class (note: brittle if class hash changes) */
+.MuiBox-root.css-1hjq20a { position:relative; background:linear-gradient(145deg,#5FD068 0%, #8AE892 60%, #E3FBE7 100%); }
+.MuiBox-root.css-1hjq20a::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 65% 35%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%); pointer-events:none; mix-blend-mode:overlay; }
+.MuiBox-root.css-1hjq20a .hero-video { mix-blend-mode:multiply; }
+/* Prevent background bleed into nav/search elements */
+.site-nav, .site-nav * { isolation:isolate; }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Typography, Paper, TextField, Button, Grid, Alert, Chip, Link as MuiLink } from '@mui/material'
 import { sanitizeName } from '../utils/sanitizeName'
+import { normalizeList } from '../utils/normalize'
 import { useSnackbar } from '../components/SnackbarProvider'
 
 export default function AdminImages(){
@@ -38,7 +39,10 @@ export default function AdminImages(){
 
   // fetch animals
   useEffect(() => {
-    fetch('/api/animals').then(r=>r.json()).then(setAnimals).catch(()=>{})
+    fetch('/api/animals')
+      .then(r=>r.json())
+      .then(payload=> setAnimals(normalizeList(payload)))
+      .catch(()=>{})
   }, [])
 
   // check image existence for each animal (uploads then images)
@@ -94,7 +98,7 @@ export default function AdminImages(){
         <Box sx={{mt:3}}>
           <Typography variant="h6" gutterBottom>Animal Image Status</Typography>
           <Grid container spacing={1}>
-            {animals.map(a => {
+            {(Array.isArray(animals)? animals : []).map(a => {
               const st = checks[a.id]
               return (
                 <Grid item xs={12} sm={6} md={4} key={a.id}>

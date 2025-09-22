@@ -31,8 +31,11 @@ def test_animal_crud(tmp_path):
     assert rv.status_code == 201, f"create animal failed: {rv.data}"
     aid = rv.get_json()['id']
 
-    # list animals
-    rv = client.get('/api/animals')
-    assert rv.status_code == 200
-    animals = rv.get_json()
-    assert any(a['name'] == 'Leo' for a in animals), f"animals list did not include Leo: {animals}"
+    # list animals (paginated shape)
+    rv = client.get('/api/animals?page=1&per_page=5')
+    assert rv.status_code == 200, rv.data
+    payload = rv.get_json()
+    assert 'data' in payload and 'meta' in payload, f"unexpected response shape: {payload}"
+    assert any(a['name'] == 'Leo' for a in payload['data']), f"animals list did not include Leo: {payload}"
+    meta = payload['meta']
+    assert meta['page'] == 1 and meta['per_page'] == 5

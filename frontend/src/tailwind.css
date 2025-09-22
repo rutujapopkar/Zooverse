@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities */
+.break-inside-avoid { break-inside: avoid; }
+
+/* Base + component layers moved to styles/base-layer.css for cleanliness */
