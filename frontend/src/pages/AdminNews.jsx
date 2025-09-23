@@ -4,7 +4,7 @@ import AdminLayout from '../components/admin/AdminLayout'
 export default function AdminNews(){
   return (
     <AdminLayout>
-      <div className="fadeIn" style={{paddingTop:'1rem'}}>
+      <div className="fadeIn admin-placeholder-block">
         <h2>News & Reports (Placeholder)</h2>
         <p>Planned capabilities:</p>
         <ul>

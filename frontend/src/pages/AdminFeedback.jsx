@@ -4,7 +4,7 @@ import AdminLayout from '../components/admin/AdminLayout'
 export default function AdminFeedback(){
   return (
     <AdminLayout>
-      <div className="fadeIn" style={{paddingTop:'1rem'}}>
+      <div className="fadeIn admin-placeholder-block">
         <h2>Visitor Feedback (Placeholder)</h2>
         <p>Planned features:</p>
         <ul>

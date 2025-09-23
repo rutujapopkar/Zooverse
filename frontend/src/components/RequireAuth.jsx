@@ -33,3 +33,13 @@ export function RequireVet({ children }){
   }
   return children
 }
+
+export function RequireStaff({ children }){
+  const token = localStorage.getItem('token')
+  const location = useLocation()
+  const role = token ? getRoleFromToken(token) : null
+  if(!token || (role !== 'staff' && role !== 'admin')){
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
+  return children
+}

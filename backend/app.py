@@ -297,6 +297,33 @@ def create_app():
         db.session.commit()
         return jsonify(u.to_dict()), 201
 
+    @app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+    @jwt_required()
+    def update_user_admin(user_id):
+        """Admin: update user role and optionally password.
+
+        Payload fields supported:
+          - role: one of admin|vet|staff|customer (doctor accepted as alias -> vet)
+          - password: if provided and non-empty resets password
+        """
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'msg':'forbidden'}), 403
+        u = User.query.get_or_404(user_id)
+        data = request.get_json() or {}
+        new_role = data.get('role')
+        if new_role:
+            if new_role == 'doctor':
+                new_role = 'vet'
+            if new_role not in ('admin','vet','staff','customer'):
+                return jsonify({'msg':'invalid role'}), 400
+            u.role = new_role
+        new_pw = data.get('password')
+        if new_pw:
+            u.set_password(new_pw)
+        db.session.commit()
+        return jsonify(u.to_dict())
+
     # Animal CRUD
     @app.route('/api/animals', methods=['POST'])
     @jwt_required()

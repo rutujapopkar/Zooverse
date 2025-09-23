@@ -25,6 +25,15 @@
 .stat-card::before { content:""; position:absolute; inset:0; background:linear-gradient(140deg,var(--accent)10%,rgba(255,255,255,0)70%); opacity:.08; }
 .stat-card__value { color:var(--accent); }
 
+/* Placeholder content blocks (light text with subtle panel contrast) */
+.admin-placeholder-block {
+	padding-top:1rem;
+	color:#f2f7f5;
+}
+.admin-placeholder-block h2 { color:#fff; margin-top:0; }
+.admin-placeholder-block p, .admin-placeholder-block li { color:rgba(255,255,255,0.85); }
+.admin-placeholder-block ul { padding-left:1.25rem; margin-top:.5rem; }
+
 /* Tables */
 .admin-table { width:100%; border-collapse:collapse; font-size:.75rem; }
 .admin-table th, .admin-table td { text-align:left; padding:.6rem .7rem; border-bottom:1px solid var(--color-border-subtle); }

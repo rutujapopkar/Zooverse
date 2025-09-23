@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Typography, Button, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material'
+import { Box, Typography, Button, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Tooltip, Stack } from '@mui/material'
 import axios from 'axios'
 import { useSnackbar } from '../components/SnackbarProvider'
 
@@ -50,6 +50,12 @@ export default function AdminStaff(){
     }
   }
 
+  function changeRole(u, role){
+    axios.put(`/api/admin/users/${u.id}`, { role }, { headers })
+      .then(()=>{ notify(`Updated ${u.username} role to ${role}`, 'success'); load() })
+      .catch(e=>{ console.error(e); notify('Role update failed','error') })
+  }
+
   return (
     <Box sx={{mt:4}}>
       <Typography variant="h4" gutterBottom>Admin — Staff Management</Typography>
@@ -61,9 +67,23 @@ export default function AdminStaff(){
               <CardContent>
                 <Typography variant="h6">{u.username}</Typography>
                 <Typography color="text.secondary" sx={{display:'flex', alignItems:'center', gap:1}}>Role: <span className={`status-badge role-${u.role}`}>{u.role}</span></Typography>
-                <Box sx={{mt:2, display:'flex', gap:1}}>
-                  <Button size="small" onClick={()=>handleEdit(u)}>Edit</Button>
-                  <Button size="small" color="error" onClick={()=>handleDelete(u)}>Delete</Button>
+                <Box sx={{mt:2, display:'flex', flexDirection:'column', gap:1}}>
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    <Button size="small" onClick={()=>handleEdit(u)}>Edit</Button>
+                    <Button size="small" color="error" onClick={()=>handleDelete(u)}>Delete</Button>
+                  </Stack>
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {u.role !== 'vet' && (
+                      <Tooltip title="Grant veterinary (doctor) access">
+                        <Button size="small" color="success" onClick={()=>changeRole(u,'vet')}>Make Vet</Button>
+                      </Tooltip>) }
+                    {u.role !== 'staff' && (
+                      <Button size="small" onClick={()=>changeRole(u,'staff')}>Make Staff</Button>) }
+                    {u.role !== 'customer' && (
+                      <Button size="small" onClick={()=>changeRole(u,'customer')}>Demote Customer</Button>) }
+                    {u.role !== 'admin' && (
+                      <Button size="small" color="secondary" onClick={()=>changeRole(u,'admin')}>Make Admin</Button>) }
+                  </Stack>
                 </Box>
               </CardContent>
             </Card>

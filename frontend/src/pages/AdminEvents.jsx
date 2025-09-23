@@ -4,7 +4,7 @@ import AdminLayout from '../components/admin/AdminLayout'
 export default function AdminEvents(){
   return (
     <AdminLayout>
-      <div className="fadeIn" style={{paddingTop:'1rem'}}>
+      <div className="fadeIn admin-placeholder-block">
         <h2>Events (Placeholder)</h2>
         <p>This section will let admins create, schedule, and publish zoo events. Upcoming enhancements planned:</p>
         <ul>

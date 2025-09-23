@@ -22,7 +22,7 @@ import theme from './theme'
 // Ensure axios interceptors are registered early
 import './utils/axiosSetup'
 import NavBar from './components/NavBar'
-import { RequireAuth, RequireAdmin, RequireVet } from './components/RequireAuth'
+import { RequireAuth, RequireAdmin, RequireVet, RequireStaff } from './components/RequireAuth'
 import DoctorDashboard from './pages/DoctorDashboard'
 import ErrorBoundary from './components/ErrorBoundary'
 import Footer from './components/Footer'
@@ -40,6 +40,7 @@ import FaqPage from './pages/FaqPage'
 import MapPage from './pages/MapPage'
 import ContactPage from './pages/ContactPage'
 import CustomerDashboard from './pages/CustomerDashboard'
+import StaffDashboard from './pages/StaffDashboard'
 
 function App(){
   return (
@@ -57,6 +58,7 @@ function App(){
           <Route path="/register" element={<Container><RegisterPage/></Container>} />
           <Route path="/dashboard" element={<RequireAuth><Container><Dashboard/></Container></RequireAuth>} />
           <Route path="/customer" element={<RequireAuth><Container><CustomerDashboard/></Container></RequireAuth>} />
+          <Route path="/staff" element={<RequireStaff><Container><StaffDashboard/></Container></RequireStaff>} />
           <Route path="/animals" element={<Container><AnimalsPage/></Container>} />
           <Route path="/animals/:id" element={<Container><AnimalDetail/></Container>} />
           <Route path="/admin" element={<RequireAdmin><AdminDashboard/></RequireAdmin>} />

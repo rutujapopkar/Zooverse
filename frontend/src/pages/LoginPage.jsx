@@ -14,7 +14,18 @@ export default function LoginPage(){
       const r = await axios.post('/api/login', { username, password })
       const token = r.data.access_token
       localStorage.setItem('token', token)
-      const dest = (location.state && location.state.from) || '/dashboard'
+      // Decode role from JWT
+      let role = null
+      try { role = JSON.parse(atob(token.split('.')[1]))?.role } catch(_) {}
+      // If user was redirected to login from a protected page, honor that first
+      let dest = (location.state && location.state.from)
+      if(!dest){
+        const rlower = (role || '').toLowerCase()
+  if(rlower === 'admin') dest = '/admin'
+  else if(rlower === 'vet' || rlower === 'doctor') dest = '/doctor'
+  else if(rlower === 'staff') dest = '/staff'
+  else dest = '/dashboard'
+      }
       navigate(dest)
     }catch(e){
       alert('login failed')
