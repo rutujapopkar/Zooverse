@@ -48,17 +48,38 @@ def ensure_admin(path: str, username: str, password: str) -> Result:
         cols = {r[1]: r for r in cur.fetchall()}  # name -> tuple
         has_membership_points = 'membership_points' in cols
         has_membership_level = 'membership_level' in cols
-        cur.execute("SELECT id, password_hash FROM user WHERE username=?", (username,))
+        has_role = 'role' in cols
+        # Some very old schemas might use 'password' instead of 'password_hash'
+        password_column = 'password_hash' if 'password_hash' in cols else ('password' if 'password' in cols else None)
+        if password_column is None:
+            return Result(path, "error", "no password or password_hash column in user table")
+        # If 'role' is missing, try to add it with a safe default, then continue
+        if not has_role:
+            try:
+                cur.execute("ALTER TABLE user ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'customer'")
+                con.commit()
+                has_role = True
+            except Exception as e:
+                # Continue without role update; will at least set password
+                pass
+        cur.execute("SELECT id FROM user WHERE username=?", (username,))
         row = cur.fetchone()
         phash = generate_password_hash(password)
         if row:
-            cur.execute("UPDATE user SET role='admin', password_hash=? WHERE id=?", (phash, row[0]))
+            user_id = row[0]
+            if has_role:
+                cur.execute(f"UPDATE user SET role='admin', {password_column}=? WHERE id=?", (phash, user_id))
+            else:
+                cur.execute(f"UPDATE user SET {password_column}=? WHERE id=?", (phash, user_id))
             action = "updated existing user to admin"
         else:
             # Build insert fields dynamically
             from typing import Any
-            fields = ['username', 'role', 'password_hash']
+            fields = ['username', password_column]
             values: list[Any] = [username, 'admin', phash]
+            if has_role:
+                fields.insert(1, 'role')
+                values.insert(1, 'admin')
             if has_membership_level:
                 fields.append('membership_level')
                 values.append('')  # blank level
@@ -75,7 +96,7 @@ def ensure_admin(path: str, username: str, password: str) -> Result:
         con.commit()
         return Result(path, action)
     except Exception as e:  # pragma: no cover - best effort utility
-        return Result(path, "error", str(e))
+        return Result(path, "error", f"{type(e).__name__}: {e}")
     finally:
         try:
             con.close()  # type: ignore

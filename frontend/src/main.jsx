@@ -41,6 +41,10 @@ import MapPage from './pages/MapPage'
 import ContactPage from './pages/ContactPage'
 import CustomerDashboard from './pages/CustomerDashboard'
 import StaffDashboard from './pages/StaffDashboard'
+import EventsPage from './pages/EventsPage'
+import NewsPage from './pages/NewsPage'
+import EventDetail from './pages/EventDetail'
+import NewsDetail from './pages/NewsDetail'
 
 function App(){
   return (
@@ -61,6 +65,10 @@ function App(){
           <Route path="/staff" element={<RequireStaff><Container><StaffDashboard/></Container></RequireStaff>} />
           <Route path="/animals" element={<Container><AnimalsPage/></Container>} />
           <Route path="/animals/:id" element={<Container><AnimalDetail/></Container>} />
+          <Route path="/events" element={<Container><EventsPage/></Container>} />
+          <Route path="/news" element={<Container><NewsPage/></Container>} />
+          <Route path="/events/:id" element={<Container><EventDetail/></Container>} />
+          <Route path="/news/:id" element={<Container><NewsDetail/></Container>} />
           <Route path="/admin" element={<RequireAdmin><AdminDashboard/></RequireAdmin>} />
           <Route path="/admin/animals" element={<RequireAdmin><ErrorBoundary><AdminAnimals/></ErrorBoundary></RequireAdmin>} />
           <Route path="/admin/images" element={<RequireAdmin><ErrorBoundary><AdminImages/></ErrorBoundary></RequireAdmin>} />

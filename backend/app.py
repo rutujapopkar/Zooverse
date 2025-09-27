@@ -29,10 +29,21 @@ def create_app():
         chosen_db = abs_db_path
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'super-secret-change-me')
+    # Limit upload size (default 8MB). Override via MAX_CONTENT_LENGTH env var.
+    try:
+        app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 8 * 1024 * 1024))
+    except Exception:
+        app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
 
     db.init_app(app)
-    # enable CORS for frontend apps (adjust origins in production)
-    CORS(app)
+    # Configure CORS: restrict to known front-end origins. In production, set CORS_ORIGINS env (comma-separated)
+    cors_env = os.environ.get('CORS_ORIGINS')
+    if cors_env:
+        origins = [o.strip() for o in cors_env.split(',') if o.strip()]
+    else:
+        # sensible defaults for local dev
+        origins = ['http://localhost:5173', 'http://127.0.0.1:5173']
+    CORS(app, resources={r"/api/*": {"origins": origins}})
     jwt = JWTManager(app)
     # uploads folder
     upload_dir = os.path.join(os.getcwd(), 'uploads')
@@ -72,15 +83,16 @@ def create_app():
                 db.session.commit()
         except Exception:
             db.session.rollback()
-        # Seed default admin if missing
-        try:
-            if not User.query.filter_by(username='Admin123').first():
-                admin = User(username='Admin123', role='admin')
-                admin.set_password('zoosys')
-                db.session.add(admin)
-                db.session.commit()
-        except Exception:
-            db.session.rollback()
+        # Seed default admin if missing (DEV ONLY)
+        if os.environ.get('ENV', 'development') != 'production':
+            try:
+                if not User.query.filter_by(username='Admin123').first():
+                    admin = User(username='Admin123', role='admin')
+                    admin.set_password('zoosys')
+                    db.session.add(admin)
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
         # Seed default ticket types if none
         try:
             if TicketType.query.count() == 0:
@@ -93,15 +105,16 @@ def create_app():
                 db.session.commit()
         except Exception:
             db.session.rollback()
-        # Seed sample vet user
-        try:
-            if not User.query.filter_by(username='Doctor1').first():
-                vet = User(username='Doctor1', role='vet')
-                vet.set_password('doctorpass')
-                db.session.add(vet)
-                db.session.commit()
-        except Exception:
-            db.session.rollback()
+        # Seed sample vet user (DEV ONLY)
+        if os.environ.get('ENV', 'development') != 'production':
+            try:
+                if not User.query.filter_by(username='Doctor1').first():
+                    vet = User(username='Doctor1', role='vet')
+                    vet.set_password('doctorpass')
+                    db.session.add(vet)
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
         # Seed sample animals if none exist
         try:
             if Animal.query.count() == 0:
@@ -1125,6 +1138,14 @@ def create_app():
         events = Event.query.filter(Event.active == True, Event.start_date >= today).order_by(Event.start_date.asc()).limit(50).all()
         return jsonify([e.to_dict() for e in events])
 
+    @app.route('/api/events/<int:eid>', methods=['GET'])
+    def get_event_public(eid):
+        ev = Event.query.get_or_404(eid)
+        # Only expose active events publicly
+        if not getattr(ev, 'active', False):
+            return jsonify({'msg': 'not found'}), 404
+        return jsonify(ev.to_dict())
+
     @app.route('/api/events/manage', methods=['GET'])
     @jwt_required()
     def list_events():
@@ -1193,6 +1214,14 @@ def create_app():
     def public_news():
         items = NewsItem.query.filter(NewsItem.published == True).order_by(NewsItem.publish_date.desc().nullslast(), NewsItem.created_at.desc()).limit(50).all()
         return jsonify([n.to_dict() for n in items])
+
+    @app.route('/api/news/<int:nid>', methods=['GET'])
+    def get_news_public(nid):
+        item = NewsItem.query.get_or_404(nid)
+        # Only expose published items publicly
+        if not item.published:
+            return jsonify({'msg': 'not found'}), 404
+        return jsonify(item.to_dict())
 
     @app.route('/api/news/manage', methods=['GET'])
     @jwt_required()
@@ -1497,7 +1526,11 @@ def create_app():
             return jsonify({'msg': 'only .jpg, .jpeg, .png allowed'}), 400
         # optional target name, e.g., building.jpg or animals/lion.jpg
         target = request.form.get('target') or fname
-        safe_target = target.replace('..','').lstrip('/\\')
+        # Normalize and validate path to prevent traversal
+        safe_target = os.path.normpath(target).replace('\\','/')
+        safe_target = safe_target.lstrip('/')
+        if '..' in safe_target.split('/'):
+            return jsonify({'msg':'invalid path'}), 400
         full_dir = os.path.join(upload_dir, os.path.dirname(safe_target))
         os.makedirs(full_dir, exist_ok=True)
         full_path = os.path.join(upload_dir, safe_target)
@@ -1731,4 +1764,6 @@ def create_app():
 
 
 if __name__ == '__main__':
-    create_app().run(debug=True)
+    # Respect ENV for debug; default to False
+    debug_mode = os.environ.get('ENV', 'development') != 'production' and os.environ.get('FLASK_DEBUG') == '1'
+    create_app().run(debug=debug_mode)
