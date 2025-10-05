@@ -7,9 +7,7 @@ const navItems = [
   { label:'Staff', path:'/admin/staff' },
   { label:'Tickets', path:'/admin/tickets' },
   { label:'Events', path:'/admin/events' },
-  { label:'News & Reports', path:'/admin/news' },
-  { label:'Feedback', path:'/admin/feedback' },
-  { label:'Audit Log', path:'/admin/audit' }
+  // Removed: News & Reports, Feedback, Audit Log per request
 ]
 
 export default function AdminLayout({ children, searchBar }){
