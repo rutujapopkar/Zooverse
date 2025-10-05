@@ -6,7 +6,6 @@ const navItems = [
   { label:'Animals', path:'/admin/animals' },
   { label:'Staff', path:'/admin/staff' },
   { label:'Tickets', path:'/admin/tickets' },
-  { label:'Events', path:'/admin/events' },
   // Removed: News & Reports, Feedback, Audit Log per request
 ]
 
