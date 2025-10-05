@@ -16,7 +16,7 @@ export default function NavBar({ variant='light' }) {
   try { role = token && JSON.parse(atob(token.split('.')[1])).role } catch {}
 
   const links = [
-    { label: 'Events', path: '/events' },
+    { label: 'Home', path: '/' },
     { label: 'News', path: '/news' },
     { label: 'Map', path: '/map' },
     { label: 'FAQ', path: '/faq' },
