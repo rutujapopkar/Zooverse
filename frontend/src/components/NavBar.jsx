@@ -17,7 +17,6 @@ export default function NavBar({ variant='light' }) {
 
   const links = [
     { label: 'Home', path: '/' },
-    { label: 'News', path: '/news' },
     { label: 'Map', path: '/map' },
     { label: 'FAQ', path: '/faq' },
     { label: 'Book Tickets', path: '/bookings' }
