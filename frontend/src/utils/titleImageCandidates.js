@@ -17,7 +17,8 @@ export function titleImageCandidates(title, folders = ['news'], options = {}) {
   const { hyphenated, collapsed } = sanitizeName(title)
   const slug = hyphenated || collapsed
   if(!slug) return []
-  const exts = ['jpg']
+  // Try .jpeg before .jpg because many legacy exported images use .jpeg
+  const exts = ['jpeg', 'jpg']
   if(includeWebp) exts.push('webp')
   const out = []
   for(const folder of folders){
